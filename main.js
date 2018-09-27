@@ -1,23 +1,30 @@
 const {app, BrowserWindow} = require('electron')
-  
-let win
+const MainWindow = require('./app/windows/main_window')
 
-function createWindow () {
-  win = new BrowserWindow({width: 800, height: 600})
-  win.loadFile('index.html')
-  win.on('closed', () => {
-    win = null
-  })
+class BrowserWindowMock {
+  constructor(options) {
+    this.options = options
+  }
+
+  loadFile(path) { return path }
+  on(eventName, callback) {
+    switch (eventName) {
+      case 'hoge':
+        callback('hogehoge')
+        break
+      default:
+        callback()
+        break
+    }
+  }
 }
 
-app.on('ready', createWindow)
-
-app.on('window-all-closed', () => {
-  app.quit()
-})
-
-app.on('activate', () => {
-  if (win === null) {
-    createWindow()
+class WattiApp {
+  constructor() {
+    this.mainWindow = new MainWindow(BrowserWindow)
+    app.on('ready', () => { this.mainWindow.open() })
+    app.on('window-all-closed', () => { app.quit() })
   }
-})
+}
+
+wattiApp = new WattiApp()
